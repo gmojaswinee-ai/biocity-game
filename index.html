@@ -1,1 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BioCity — Dr. Meera Rao vs The Outbreak</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0a0f1a; color: #e0e8ff; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
+#screen-title { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; background: #0a0f1a; }
+#screen-title h1 { font-size: 52px; font-weight: 700; color: #1D9E75; letter-spacing: 2px; margin-bottom: 10px; }
+#screen-title .sub { font-size: 18px; color: #7ab8a0; margin-bottom: 8px; }
+#screen-title .hero { font-size: 14px; color: #4a7a65; margin-bottom: 40px; }
+#screen-title button { background: #1D9E75; color: #fff; border: none; padding: 16px 48px; font-size: 18px; border-radius: 8px; cursor: pointer; letter-spacing: 1px; transition: background 0.2s; }
+#screen-title button:hover { background: #0F6E56; }
+#screen-game { display: none; flex-direction: column; height: 100vh; }
+#hud { display: flex; align-items: center; gap: 16px; padding: 10px 20px; background: #0d1520; border-bottom: 1px solid #1D9E7540; flex-wrap: wrap; }
+#hud .hud-title { font-size: 18px; font-weight: 700; color: #1D9E75; margin-right: 8px; }
+.hud-stat { background: #111c2a; border: 1px solid #1D9E7530; border-radius: 6px; padding: 6px 14px; text-align: center; }
+.hud-stat .lbl { font-size: 10px; color: #4a7a65; text-transform: uppercase; }
+.hud-stat .val { font-size: 18px; font-weight: 700; }
+.val.green { color: #1D9E75; }
+.val.red { color: #E24B4A; }
+.val.amber { color: #EF9F27; }
+.val.white { color: #e0e8ff; }
+#game-body { display: flex; flex: 1; overflow: hidden; }
+#map-area { flex: 1; position: relative; background: #0d1520; }
+canvas#map { display: block; width: 100%; height: 100%; }
+#side-panel { width: 280px; background: #0d1520; border-left: 1px solid #1D9E7520; display: flex; flex-direction: column; padding: 14px; gap: 12px; overflow-y: auto; }
+.panel-section { background: #111c2a; border: 1px solid #1D9E7520; border-radius: 8px; padding: 12px; }
+.panel-section h3 { font-size: 12px; color: #4a7a65; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.zone-info { font-size: 13px; color: #a0b8c8; line-height: 1.8; }
+.zone-info span { color: #e0e8ff; font-weight: 600; }
+.action-btn { width: 100%; padding: 9px; margin-bottom: 6px; border-radius: 6px; border: 1px solid #1D9E7540; background: #0a1520; color: #1D9E75; font-size: 13px; cursor: pointer; transition: all 0.15s; text-align: left; }
+.action-btn:hover { background: #1D9E7520; border-color: #1D9E75; }
+.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.action-btn.used { border-color: #4a7a6540; color: #4a7a65; }
+.event-box { font-size: 13px; color: #a0b8c8; line-height: 1.7; }
+.event-box .ev-title { color: #EF9F27; font-weight: 600; font-size: 12px; margin-bottom: 4px; }
+.log-line { font-size: 11px; color: #4a7a65; line-height: 1.8; border-bottom: 1px solid #1D9E7510; padding-bottom: 3px; margin-bottom: 3px; }
+.log-line .log-hi { color: #1D9E75; }
+.sir-bar-wrap { margin-top: 4px; }
+.sir-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; }
+.sir-label { width: 18px; color: #a0b8c8; }
+.sir-bar-bg { flex: 1; background: #0a1520; border-radius: 4px; height: 8px; overflow: hidden; }
+.sir-bar { height: 100%; border-radius: 4px; transition: width 0.5s; }
+.sir-val { width: 32px; text-align: right; color: #a0b8c8; }
+#screen-gameover { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; background: #0a0f1a; }
+#screen-gameover h2 { font-size: 40px; font-weight: 700; margin-bottom: 12px; }
+#screen-gameover p { font-size: 15px; color: #7ab8a0; margin-bottom: 30px; max-width: 400px; line-height: 1.7; }
+#screen-gameover button { background: #1D9E75; color: #fff; border: none; padding: 14px 40px; font-size: 16px; border-radius: 8px; cursor: pointer; margin: 6px; }
+.pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin: 2px; }
+.pill.green { background: #1D9E7520; color: #1D9E75; border: 1px solid #1D9E7540; }
+.pill.red { background: #E24B4A20; color: #E24B4A; border: 1px solid #E24B4A40; }
+.pill.amber { background: #EF9F2720; color: #EF9F27; border: 1px solid #EF9F2740; }
+</style>
+</head>
+<body>
 
+<div id="screen-title">
+  <h1>BIOCITY</h1>
+  <div class="sub">A Bioinformatics Survival Game</div>
+  <div class="hero">Play as Dr. Meera Rao — Virologist & Hero</div>
+  <button onclick="startGame()">Start Game</button>
+</div>
+
+<div id="screen-game">
+  <div id="hud">
+    <div class="hud-title">BIOCITY</div>
+    <div class="hud-stat"><div class="lbl">Day</div><div class="val white" id="h-day">1</div></div>
+    <div class="hud-stat"><div class="lbl">Infected</div><div class="val red" id="h-infected">0</div></div>
+    <div class="hud-stat"><div class="lbl">Recovered</div><div class="val green" id="h-recovered">0</div></div>
+    <div class="hud-stat"><div class="lbl">City Health</div><div class="val amber" id="h-health">100%</div></div>
+    <div class="hud-stat"><div class="lbl">R0 Number</div><div class="val red" id="h-r0">2.5</div></div>
+    <div class="hud-stat"><div class="lbl">Vaccine</div><div class="val green" id="h-vaccine">0%</div></div>
+    <div style="margin-left:auto; display:flex; gap:8px;">
+      <button onclick="advanceDay()" style="background:#1D9E75;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:13px;">Next Day ▶</button>
+      <button onclick="togglePause()" id="pause-btn" style="background:#111c2a;color:#EF9F27;border:1px solid #EF9F2740;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:13px;">Pause</button>
+    </div>
+  </div>
+  <div id="game-body">
+    <div id="map-area"><canvas id="map"></canvas></div>
+    <div id="side-panel">
+      <div class="panel-section">
+        <h3>Selected Zone</h3>
+        <div class="zone-info" id="zone-info">Click a zone on the map to inspect it.</div>
+      </div>
+      <div class="panel-section">
+        <h3>SIR Model</h3>
+        <div class="sir-bar-wrap" id="sir-bars"></div>
+      </div>
+      <div class="panel-section">
+        <h3>Dr. Meera's Actions</h3>
+        <div id="actions-area"></div>
+      </div>
+      <div class="panel-section">
+        <h3>Event Log</h3>
+        <div id="log-area"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="screen-gameover">
+  <h2 id="go-title">Game Over</h2>
+  <p id="go-msg"></p>
+  <button onclick="location.reload()">Play Again</button>
+</div>
+
+<script>
+const CITY_POP = 500;
+const ZONES = [
+  { name:'Market',    x:0.08, y:0.08, w:0.22, h:0.28, color:'#D85A30', pop:120, S:120, I:0, R:0, quarantine:false, vaccinated:0 },
+  { name:'Hospital',  x:0.36, y:0.08, w:0.22, h:0.28, color:'#185FA5', pop:60,  S:60,  I:0, R:0, quarantine:false, vaccinated:0 },
+  { name:'Police HQ', x:0.64, y:0.08, w:0.28, h:0.28, color:'#3B6D11', pop:40,  S:40,  I:0, R:0, quarantine:false, vaccinated:0 },
+  { name:'Slums',     x:0.08, y:0.52, w:0.22, h:0.38, color:'#854F0B', pop:160, S:160, I:0, R:0, quarantine:false, vaccinated:0 },
+  { name:'Lab',       x:0.36, y:0.52, w:0.22, h:0.38, color:'#534AB7', pop:30,  S:30,  I:0, R:0, quarantine:false, vaccinated:0 },
+  { name:'Airport',   x:0.64, y:0.52, w:0.28, h:0.38, color:'#5F5E5A', pop:90,  S:90,  I:0, R:0, quarantine:false, vaccinated:0 },
+];
+
+let state = {
+  day: 1, cityHealth: 100, vaccineProgress: 0,
+  paused: false, selectedZone: null, gameOver: false,
+  beta: 0.35, gamma: 0.08, log: [], actions: {
+    quarantine: false, massTesting: false, labResearch: false,
+    distributeVaccine: false, closeBorders: false
+  }
+};
+
+ZONES[0].I = 5; ZONES[0].S -= 5;
+ZONES[3].I = 2; ZONES[3].S -= 2;
+
+const canvas = document.getElementById('map');
+const ctx = canvas.getContext('2d');
+let W, H;
+
+function resize() {
+  const area = document.getElementById('map-area');
+  W = canvas.width = area.clientWidth;
+  H = canvas.height = area.clientHeight;
+  drawMap();
+}
+
+function zoneRect(z) {
+  return { x: z.x*W, y: z.y*H, w: z.w*W, h: z.h*H };
+}
+
+function drawMap() {
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle = '#0d1520';
+  ctx.fillRect(0,0,W,H);
+
+  ctx.strokeStyle = '#1D9E7515'; ctx.lineWidth = 1;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+
+  ctx.strokeStyle = '#1D9E7530'; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(W*0.33,0); ctx.lineTo(W*0.33,H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(W*0.62,0); ctx.lineTo(W*0.62,H); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(0,H*0.44); ctx.lineTo(W,H*0.44); ctx.stroke();
+  ctx.setLineDash([]);
+
+  ZONES.forEach((z,i) => {
+    const r = zoneRect(z);
+    const infRatio = z.pop > 0 ? z.I / z.pop : 0;
+
+    ctx.fillStyle = z.color + '18';
+    roundRect(ctx, r.x+4, r.y+4, r.w-8, r.h-8, 10);
+    ctx.fill();
+
+    if(infRatio > 0) {
+      ctx.fillStyle = `rgba(226,75,74,${Math.min(0.35, infRatio * 0.7)})`;
+      roundRect(ctx, r.x+4, r.y+4, r.w-8, r.h-8, 10);
+      ctx.fill();
+    }
+
+    const borderColor = state.selectedZone === i ? '#ffffff' : z.quarantine ? '#EF9F27' : z.color;
+    ctx.strokeStyle = borderColor;
+    ctx.lineWidth = state.selectedZone === i ? 2.5 : 1.5;
+    roundRect(ctx, r.x+4, r.y+4, r.w-8, r.h-8, 10);
+    ctx.stroke();
+
+    ctx.fillStyle = '#e0e8ff';
+    ctx.font = `600 ${Math.max(12, r.w*0.09)}px Segoe UI`;
+    ctx.textAlign = 'center';
+    ctx.fillText(z.name, r.x + r.w/2, r.y + 28);
+
+    ctx.font = `${Math.max(10, r.w*0.07)}px Segoe UI`;
+    ctx.fillStyle = '#E24B4A';
+    ctx.fillText(`Infected: ${z.I}`, r.x + r.w/2, r.y + 48);
+    ctx.fillStyle = '#1D9E75';
+    ctx.fillText(`Recovered: ${z.R}`, r.x + r.w/2, r.y + 64);
+    ctx.fillStyle = '#a0b8c8';
+    ctx.fillText(`Pop: ${z.pop}`, r.x + r.w/2, r.y + 80);
+
+    if(z.quarantine) {
+      ctx.fillStyle = '#EF9F27';
+      ctx.font = `bold ${Math.max(10,r.w*0.065)}px Segoe UI`;
+      ctx.fillText('QUARANTINE', r.x + r.w/2, r.y + r.h - 14);
+    }
+
+    const maxDots = 12;
+    const dots = Math.round(infRatio * maxDots);
+    for(let d=0;d<dots;d++) {
+      const dx = r.x + 16 + Math.random()*(r.w-32);
+      const dy = r.y + 95 + Math.random()*(r.h-110);
+      ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI*2);
+      ctx.fillStyle = '#E24B4A'; ctx.fill();
+    }
+  });
+
+  ctx.fillStyle = '#1D9E7560'; ctx.font = 'bold 13px Segoe UI'; ctx.textAlign = 'left';
+  ctx.fillText('BIOCITY — Click a zone to inspect', 12, H-12);
+}
+
+function roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
+  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
+  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
+  ctx.closePath();
+}
+
+canvas.addEventListener('click', e => {
+  const rect = canvas.getBoundingClientRect();
+  const mx = (e.clientX - rect.left) * (W / rect.width);
+  const my = (e.clientY - rect.top) * (H / rect.height);
+  ZONES.forEach((z,i) => {
+    const r = zoneRect(z);
+    if(mx>=r.x && mx<=r.x+r.w && my>=r.y && my<=r.y+r.h) {
+      state.selectedZone = i; updateSidePanel(); drawMap();
+    }
+  });
+});
+
+function totalInfected() { return ZONES.reduce((s,z)=>s+z.I,0); }
+function totalRecovered() { return ZONES.reduce((s,z)=>s+z.R,0); }
+function totalSusceptible() { return ZONES.reduce((s,z)=>s+z.S,0); }
+
+function sirStep() {
+  ZONES.forEach(z => {
+    if(z.pop === 0) return;
+    const beta = z.quarantine ? state.beta * 0.2 : state.beta;
+    const N = z.pop;
+    const newInfected = Math.min(z.S, Math.round(beta * z.S * z.I / N));
+    const newRecovered = Math.min(z.I, Math.round(state.gamma * z.I));
+    z.S = Math.max(0, z.S - newInfected);
+    z.I = Math.max(0, z.I + newInfected - newRecovered);
+    z.R = Math.min(z.pop, z.R + newRecovered);
+  });
+
+  if(Math.random() < 0.15 && !state.actions.closeBorders) {
+    const clean = ZONES.filter(z=>z.I===0 && z.S>5);
+    if(clean.length) { const z=clean[Math.floor(Math.random()*clean.length)]; z.I=1; z.S=Math.max(0,z.S-1); }
+  }
+
+  if(state.actions.labResearch) state.vaccineProgress = Math.min(100, state.vaccineProgress + 8);
+  if(state.actions.distributeVaccine && state.vaccineProgress >= 100) {
+    ZONES.forEach(z => { const boost=Math.min(z.S,Math.round(z.pop*0.1)); z.S-=boost; z.R+=boost; z.vaccinated+=boost; });
+  }
+
+  state.cityHealth = Math.max(0, 100 - Math.round(totalInfected() / CITY_POP * 120));
+}
+
+function addLog(msg, type='normal') {
+  state.log.unshift({ msg, type, day: state.day });
+  if(state.log.length > 20) state.log.pop();
+}
+
+function advanceDay() {
+  if(state.gameOver) return;
+  sirStep();
+  state.day++;
+  checkEvents();
+  updateHUD();
+  updateSidePanel();
+  drawMap();
+  checkGameOver();
+}
+
+function checkEvents() {
+  const ti = totalInfected();
+  if(state.day === 3) addLog('Virus detected in Airport zone — travel risk rising.', 'warn');
+  if(state.day === 5) addLog('WHO issues emergency alert. R0 estimated at 2.5.', 'warn');
+  if(ti > 100 && state.day % 3 === 0) addLog(`${ti} infected — city under stress.`, 'danger');
+  if(state.vaccineProgress >= 100 && !state._vaccineDone) { state._vaccineDone=true; addLog('Vaccine synthesised by Dr. Meera Rao! Deploy now.', 'good'); }
+  if(state.day === 7) addLog('Razor spotted near Slums. Spreading intentionally.', 'danger');
+}
+
+function checkGameOver() {
+  const ti = totalInfected();
+  const tr = totalRecovered();
+  if(state.cityHealth <= 0 || ti >= CITY_POP * 0.85) {
+    endGame(false);
+  } else if(ti === 0 && state.day > 5 && tr > 50) {
+    endGame(true);
+  }
+}
+
+function endGame(win) {
+  state.gameOver = true;
+  document.getElementById('screen-game').style.display = 'none';
+  document.getElementById('screen-gameover').style.display = 'flex';
+  document.getElementById('go-title').textContent = win ? 'Outbreak Contained!' : 'BioCity Fell.';
+  document.getElementById('go-title').style.color = win ? '#1D9E75' : '#E24B4A';
+  document.getElementById('go-msg').textContent = win
+    ? `Dr. Meera Rao saved BioCity on Day ${state.day}! ${totalRecovered()} people recovered. Your bioinformatics knowledge made the difference.`
+    : `The virus overwhelmed BioCity by Day ${state.day}. ${totalInfected()} infected. City health: ${state.cityHealth}%. Try different strategies next time.`;
+}
+
+function updateHUD() {
+  document.getElementById('h-day').textContent = state.day;
+  document.getElementById('h-infected').textContent = totalInfected();
+  document.getElementById('h-recovered').textContent = totalRecovered();
+  document.getElementById('h-health').textContent = Math.round(state.cityHealth) + '%';
+  document.getElementById('h-r0').textContent = state.beta.toFixed(2);
+  document.getElementById('h-vaccine').textContent = Math.round(state.vaccineProgress) + '%';
+}
+
+function updateSidePanel() {
+  const z = state.selectedZone !== null ? ZONES[state.selectedZone] : null;
+  document.getElementById('zone-info').innerHTML = z
+    ? `<b style="color:#e0e8ff">${z.name}</b><br>
+       Population: <span>${z.pop}</span><br>
+       Susceptible: <span style="color:#a0b8c8">${z.S}</span><br>
+       Infected: <span style="color:#E24B4A">${z.I}</span><br>
+       Recovered: <span style="color:#1D9E75">${z.R}</span><br>
+       Status: <span>${z.quarantine ? '🔒 Quarantined' : 'Open'}</span>`
+    : 'Click a zone on the map to inspect it.';
+
+  const tot = CITY_POP;
+  const S = totalSusceptible(), I = totalInfected(), R = totalRecovered();
+  document.getElementById('sir-bars').innerHTML = `
+    <div class="sir-row"><span class="sir-label" style="color:#a0b8c8">S</span><div class="sir-bar-bg"><div class="sir-bar" style="width:${Math.round(S/tot*100)}%;background:#185FA5"></div></div><span class="sir-val">${S}</span></div>
+    <div class="sir-row"><span class="sir-label" style="color:#E24B4A">I</span><div class="sir-bar-bg"><div class="sir-bar" style="width:${Math.round(I/tot*100)}%;background:#E24B4A"></div></div><span class="sir-val">${I}</span></div>
+    <div class="sir-row"><span class="sir-label" style="color:#1D9E75">R</span><div class="sir-bar-bg"><div class="sir-bar" style="width:${Math.round(R/tot*100)}%;background:#1D9E75"></div></div><span class="sir-val">${R}</span></div>
+    <div style="font-size:11px;color:#4a7a65;margin-top:6px">SIR epidemiological model — real bioinformatics math</div>`;
+
+  document.getElementById('actions-area').innerHTML = `
+    <button class="action-btn ${state.actions.quarantine?'used':''}" onclick="doAction('quarantine')">${state.actions.quarantine?'✓ Quarantine Active':'🔒 Quarantine Selected Zone'}</button>
+    <button class="action-btn ${state.actions.massTesting?'used':''}" onclick="doAction('massTesting')">${state.actions.massTesting?'✓ Mass Testing Active':'🧪 Deploy Mass Testing'}</button>
+    <button class="action-btn ${state.actions.labResearch?'used':''}" onclick="doAction('labResearch')">${state.actions.labResearch?'✓ Lab Research Active':'🔬 Start Vaccine Research'}</button>
+    <button class="action-btn ${state.vaccineProgress<100?'used':''}" onclick="doAction('distributeVaccine')" ${state.vaccineProgress<100?'disabled':''}>${state.vaccineProgress<100?`Vaccine: ${Math.round(state.vaccineProgress)}% ready`:'💉 Distribute Vaccine!'}</button>
+    <button class="action-btn ${state.actions.closeBorders?'used':''}" onclick="doAction('closeBorders')">${state.actions.closeBorders?'✓ Borders Closed':'✈️ Close Airport Borders'}</button>`;
+
+  document.getElementById('log-area').innerHTML = state.log.slice(0,8).map(l =>
+    `<div class="log-line"><span class="log-hi">Day ${l.day}:</span> ${l.msg}</div>`
+  ).join('') || '<div class="log-line">No events yet.</div>';
+}
+
+function doAction(action) {
+  if(action === 'quarantine') {
+    if(state.selectedZone === null) { addLog('Select a zone first to quarantine.', 'warn'); updateSidePanel(); return; }
+    ZONES[state.selectedZone].quarantine = !ZONES[state.selectedZone].quarantine;
+    addLog(`${ZONES[state.selectedZone].quarantine?'Quarantined':'Opened'}: ${ZONES[state.selectedZone].name}`, 'good');
+  } else if(action === 'massTesting') {
+    state.actions.massTesting = true;
+    state.beta = Math.max(0.05, state.beta - 0.08);
+    addLog('Mass testing deployed — spread rate reduced.', 'good');
+  } else if(action === 'labResearch') {
+    state.actions.labResearch = true;
+    addLog('Dr. Meera begins vaccine synthesis in the Lab.', 'good');
+  } else if(action === 'distributeVaccine') {
+    if(state.vaccineProgress < 100) return;
+    state.actions.distributeVaccine = true;
+    addLog('Vaccine distribution started across all zones!', 'good');
+  } else if(action === 'closeBorders') {
+    state.actions.closeBorders = true;
+    addLog('Airport borders closed — cross-zone spread blocked.', 'good');
+  }
+  updateSidePanel(); drawMap();
+}
+
+function togglePause() {
+  state.paused = !state.paused;
+  document.getElementById('pause-btn').textContent = state.paused ? 'Resume' : 'Pause';
+}
+
+let autoTimer;
+function startAutoAdvance() {
+  autoTimer = setInterval(() => { if(!state.paused && !state.gameOver) advanceDay(); }, 3000);
+}
+
+function startGame() {
+  document.getElementById('screen-title').style.display = 'none';
+  document.getElementById('screen-game').style.display = 'flex';
+  addLog('Outbreak begins. Virus detected in Market & Slums.', 'danger');
+  addLog('Dr. Meera Rao deployed. Save BioCity.', 'good');
+  resize();
+  updateHUD();
+  updateSidePanel();
+  drawMap();
+  startAutoAdvance();
+}
+
+window.addEventListener('resize', resize);
+</script>
+</body>
+</html>
