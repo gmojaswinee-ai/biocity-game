@@ -3,398 +3,660 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>BioCity — Dr. Meera Rao vs The Outbreak</title>
+<title>BioCity — Dr. Meera Rao</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #0a0f1a; color: #e0e8ff; font-family: 'Segoe UI', sans-serif; overflow-x: hidden; }
-#screen-title { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; background: #0a0f1a; }
-#screen-title h1 { font-size: 52px; font-weight: 700; color: #1D9E75; letter-spacing: 2px; margin-bottom: 10px; }
-#screen-title .sub { font-size: 18px; color: #7ab8a0; margin-bottom: 8px; }
-#screen-title .hero { font-size: 14px; color: #4a7a65; margin-bottom: 40px; }
-#screen-title button { background: #1D9E75; color: #fff; border: none; padding: 16px 48px; font-size: 18px; border-radius: 8px; cursor: pointer; letter-spacing: 1px; transition: background 0.2s; }
+body { background: #0a0f1a; color: #e0e8ff; font-family: 'Segoe UI', sans-serif; overflow: hidden; }
+#screen-title {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100vh; text-align: center; background: #0a0f1a;
+}
+#screen-title h1 { font-size: 56px; font-weight: 800; color: #1D9E75; letter-spacing: 4px; margin-bottom: 8px; }
+#screen-title .sub { font-size: 16px; color: #7ab8a0; margin-bottom: 6px; }
+#screen-title .hero { font-size: 13px; color: #4a7a65; margin-bottom: 14px; }
+#screen-title .controls-hint { font-size: 13px; color: #4a7a65; margin-bottom: 36px; line-height: 2; }
+#screen-title button {
+  background: #1D9E75; color: #fff; border: none;
+  padding: 16px 52px; font-size: 18px; border-radius: 8px;
+  cursor: pointer; letter-spacing: 1px;
+}
 #screen-title button:hover { background: #0F6E56; }
 #screen-game { display: none; flex-direction: column; height: 100vh; }
-#hud { display: flex; align-items: center; gap: 16px; padding: 10px 20px; background: #0d1520; border-bottom: 1px solid #1D9E7540; flex-wrap: wrap; }
-#hud .hud-title { font-size: 18px; font-weight: 700; color: #1D9E75; margin-right: 8px; }
-.hud-stat { background: #111c2a; border: 1px solid #1D9E7530; border-radius: 6px; padding: 6px 14px; text-align: center; }
-.hud-stat .lbl { font-size: 10px; color: #4a7a65; text-transform: uppercase; }
-.hud-stat .val { font-size: 18px; font-weight: 700; }
+#hud {
+  display: flex; align-items: center; gap: 12px; padding: 8px 16px;
+  background: #0a0f1a; border-bottom: 1px solid #1D9E7530; flex-wrap: wrap;
+}
+.hud-title { font-size: 16px; font-weight: 800; color: #1D9E75; letter-spacing: 2px; }
+.hud-stat { background: #111c2a; border: 1px solid #1D9E7520; border-radius: 6px; padding: 4px 12px; text-align: center; }
+.hud-stat .lbl { font-size: 9px; color: #4a7a65; text-transform: uppercase; }
+.hud-stat .val { font-size: 16px; font-weight: 700; }
 .val.green { color: #1D9E75; }
 .val.red { color: #E24B4A; }
 .val.amber { color: #EF9F27; }
 .val.white { color: #e0e8ff; }
-#game-body { display: flex; flex: 1; overflow: hidden; }
-#map-area { flex: 1; position: relative; background: #0d1520; }
-canvas#map { display: block; width: 100%; height: 100%; }
-#side-panel { width: 280px; background: #0d1520; border-left: 1px solid #1D9E7520; display: flex; flex-direction: column; padding: 14px; gap: 12px; overflow-y: auto; }
-.panel-section { background: #111c2a; border: 1px solid #1D9E7520; border-radius: 8px; padding: 12px; }
-.panel-section h3 { font-size: 12px; color: #4a7a65; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
-.zone-info { font-size: 13px; color: #a0b8c8; line-height: 1.8; }
-.zone-info span { color: #e0e8ff; font-weight: 600; }
-.action-btn { width: 100%; padding: 9px; margin-bottom: 6px; border-radius: 6px; border: 1px solid #1D9E7540; background: #0a1520; color: #1D9E75; font-size: 13px; cursor: pointer; transition: all 0.15s; text-align: left; }
-.action-btn:hover { background: #1D9E7520; border-color: #1D9E75; }
-.action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-.action-btn.used { border-color: #4a7a6540; color: #4a7a65; }
-.event-box { font-size: 13px; color: #a0b8c8; line-height: 1.7; }
-.event-box .ev-title { color: #EF9F27; font-weight: 600; font-size: 12px; margin-bottom: 4px; }
-.log-line { font-size: 11px; color: #4a7a65; line-height: 1.8; border-bottom: 1px solid #1D9E7510; padding-bottom: 3px; margin-bottom: 3px; }
-.log-line .log-hi { color: #1D9E75; }
-.sir-bar-wrap { margin-top: 4px; }
-.sir-row { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; font-size: 11px; }
-.sir-label { width: 18px; color: #a0b8c8; }
-.sir-bar-bg { flex: 1; background: #0a1520; border-radius: 4px; height: 8px; overflow: hidden; }
-.sir-bar { height: 100%; border-radius: 4px; transition: width 0.5s; }
-.sir-val { width: 32px; text-align: right; color: #a0b8c8; }
-#screen-gameover { display: none; flex-direction: column; align-items: center; justify-content: center; height: 100vh; text-align: center; background: #0a0f1a; }
+#game-area { position: relative; flex: 1; overflow: hidden; }
+canvas#game { display: block; }
+#overlay-msg {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: #0a0f1aee; border: 1px solid #1D9E75; border-radius: 12px;
+  padding: 24px 36px; text-align: center; display: none; z-index: 10;
+}
+#overlay-msg h2 { font-size: 24px; color: #1D9E75; margin-bottom: 8px; }
+#overlay-msg p { font-size: 14px; color: #a0b8c8; margin-bottom: 16px; line-height: 1.6; }
+#overlay-msg button { background: #1D9E75; color: #fff; border: none; padding: 10px 28px; border-radius: 6px; cursor: pointer; font-size: 14px; margin: 4px; }
+#dna-puzzle {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+  background: #0d1520ee; border: 1px solid #534AB7; border-radius: 12px;
+  padding: 20px 28px; text-align: center; display: none; z-index: 10; min-width: 320px;
+}
+#dna-puzzle h2 { font-size: 18px; color: #9B8FFF; margin-bottom: 6px; }
+#dna-puzzle p { font-size: 12px; color: #a0b8c8; margin-bottom: 14px; }
+.dna-seq { font-size: 20px; letter-spacing: 6px; color: #e0e8ff; margin-bottom: 12px; font-family: monospace; }
+.dna-options { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 12px; }
+.dna-btn { background: #111c2a; border: 1px solid #534AB740; color: #9B8FFF; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 16px; font-family: monospace; letter-spacing: 2px; }
+.dna-btn:hover { background: #534AB730; }
+#controls-hint {
+  position: absolute; bottom: 10px; left: 10px;
+  font-size: 11px; color: #4a7a6580; pointer-events: none;
+}
+#screen-gameover {
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  height: 100vh; text-align: center; background: #0a0f1a;
+}
 #screen-gameover h2 { font-size: 40px; font-weight: 700; margin-bottom: 12px; }
-#screen-gameover p { font-size: 15px; color: #7ab8a0; margin-bottom: 30px; max-width: 400px; line-height: 1.7; }
+#screen-gameover p { font-size: 15px; color: #7ab8a0; margin-bottom: 30px; max-width: 420px; line-height: 1.7; }
 #screen-gameover button { background: #1D9E75; color: #fff; border: none; padding: 14px 40px; font-size: 16px; border-radius: 8px; cursor: pointer; margin: 6px; }
-.pill { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 20px; margin: 2px; }
-.pill.green { background: #1D9E7520; color: #1D9E75; border: 1px solid #1D9E7540; }
-.pill.red { background: #E24B4A20; color: #E24B4A; border: 1px solid #E24B4A40; }
-.pill.amber { background: #EF9F2720; color: #EF9F27; border: 1px solid #EF9F2740; }
 </style>
 </head>
 <body>
 
 <div id="screen-title">
   <h1>BIOCITY</h1>
-  <div class="sub">A Bioinformatics Survival Game</div>
-  <div class="hero">Play as Dr. Meera Rao — Virologist & Hero</div>
+  <div class="sub">A Bioinformatics Action Game</div>
+  <div class="hero">🧬 Play as Dr. Meera Rao — Save the city from the outbreak</div>
+  <div class="controls-hint">
+    ⬆️⬇️⬅️➡️ Arrow keys to move &nbsp;|&nbsp; 💉 Collect vaccine kits &nbsp;|&nbsp; 🔬 Solve DNA puzzles<br>
+    ☣️ Avoid red virus zones &nbsp;|&nbsp; 🚔 Escape the police &nbsp;|&nbsp; 🧬 Find Razor and stop him
+  </div>
   <button onclick="startGame()">Start Game</button>
 </div>
 
 <div id="screen-game">
   <div id="hud">
     <div class="hud-title">BIOCITY</div>
+    <div class="hud-stat"><div class="lbl">Health</div><div class="val green" id="h-health">100</div></div>
+    <div class="hud-stat"><div class="lbl">Vaccine Kits</div><div class="val amber" id="h-kits">0</div></div>
+    <div class="hud-stat"><div class="lbl">City Infected</div><div class="val red" id="h-infected">7</div></div>
     <div class="hud-stat"><div class="lbl">Day</div><div class="val white" id="h-day">1</div></div>
-    <div class="hud-stat"><div class="lbl">Infected</div><div class="val red" id="h-infected">0</div></div>
-    <div class="hud-stat"><div class="lbl">Recovered</div><div class="val green" id="h-recovered">0</div></div>
-    <div class="hud-stat"><div class="lbl">City Health</div><div class="val amber" id="h-health">100%</div></div>
-    <div class="hud-stat"><div class="lbl">R0 Number</div><div class="val red" id="h-r0">2.5</div></div>
-    <div class="hud-stat"><div class="lbl">Vaccine</div><div class="val green" id="h-vaccine">0%</div></div>
-    <div style="margin-left:auto; display:flex; gap:8px;">
-      <button onclick="advanceDay()" style="background:#1D9E75;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:13px;">Next Day ▶</button>
-      <button onclick="togglePause()" id="pause-btn" style="background:#111c2a;color:#EF9F27;border:1px solid #EF9F2740;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:13px;">Pause</button>
-    </div>
+    <div class="hud-stat"><div class="lbl">DNA Solved</div><div class="val green" id="h-dna">0/3</div></div>
+    <div class="hud-stat"><div class="lbl">Razor</div><div class="val red" id="h-razor">At Large</div></div>
+    <div style="margin-left:auto;font-size:11px;color:#4a7a65">Arrow keys to move</div>
   </div>
-  <div id="game-body">
-    <div id="map-area"><canvas id="map"></canvas></div>
-    <div id="side-panel">
-      <div class="panel-section">
-        <h3>Selected Zone</h3>
-        <div class="zone-info" id="zone-info">Click a zone on the map to inspect it.</div>
-      </div>
-      <div class="panel-section">
-        <h3>SIR Model</h3>
-        <div class="sir-bar-wrap" id="sir-bars"></div>
-      </div>
-      <div class="panel-section">
-        <h3>Dr. Meera's Actions</h3>
-        <div id="actions-area"></div>
-      </div>
-      <div class="panel-section">
-        <h3>Event Log</h3>
-        <div id="log-area"></div>
-      </div>
+  <div id="game-area">
+    <canvas id="game"></canvas>
+    <div id="controls-hint">⬆️⬇️⬅️➡️ Move &nbsp;|&nbsp; Collect 💉 kits &nbsp;|&nbsp; Avoid ☣️ zones &nbsp;|&nbsp; Escape 🚔 police</div>
+    <div id="overlay-msg">
+      <h2 id="ov-title"></h2>
+      <p id="ov-body"></p>
+      <button id="ov-btn" onclick="closeOverlay()">Continue</button>
+    </div>
+    <div id="dna-puzzle">
+      <h2>🔬 DNA Sequencing Puzzle</h2>
+      <p>Complete the viral DNA sequence to synthesise the cure!</p>
+      <div class="dna-seq" id="dna-seq-display"></div>
+      <p style="font-size:11px;color:#534AB7;margin-bottom:10px">What is the missing base pair?</p>
+      <div class="dna-options" id="dna-options"></div>
+      <p id="dna-result" style="font-size:13px;margin-top:6px;"></p>
     </div>
   </div>
 </div>
 
 <div id="screen-gameover">
-  <h2 id="go-title">Game Over</h2>
+  <h2 id="go-title"></h2>
   <p id="go-msg"></p>
   <button onclick="location.reload()">Play Again</button>
 </div>
 
 <script>
-const CITY_POP = 500;
-const ZONES = [
-  { name:'Market',    x:0.08, y:0.08, w:0.22, h:0.28, color:'#D85A30', pop:120, S:120, I:0, R:0, quarantine:false, vaccinated:0 },
-  { name:'Hospital',  x:0.36, y:0.08, w:0.22, h:0.28, color:'#185FA5', pop:60,  S:60,  I:0, R:0, quarantine:false, vaccinated:0 },
-  { name:'Police HQ', x:0.64, y:0.08, w:0.28, h:0.28, color:'#3B6D11', pop:40,  S:40,  I:0, R:0, quarantine:false, vaccinated:0 },
-  { name:'Slums',     x:0.08, y:0.52, w:0.22, h:0.38, color:'#854F0B', pop:160, S:160, I:0, R:0, quarantine:false, vaccinated:0 },
-  { name:'Lab',       x:0.36, y:0.52, w:0.22, h:0.38, color:'#534AB7', pop:30,  S:30,  I:0, R:0, quarantine:false, vaccinated:0 },
-  { name:'Airport',   x:0.64, y:0.52, w:0.28, h:0.38, color:'#5F5E5A', pop:90,  S:90,  I:0, R:0, quarantine:false, vaccinated:0 },
-];
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+let W, H, gameRunning = false, animFrame;
 
-let state = {
-  day: 1, cityHealth: 100, vaccineProgress: 0,
-  paused: false, selectedZone: null, gameOver: false,
-  beta: 0.35, gamma: 0.08, log: [], actions: {
-    quarantine: false, massTesting: false, labResearch: false,
-    distributeVaccine: false, closeBorders: false
-  }
+// --- TILE SYSTEM ---
+const TILE = 40;
+let COLS, ROWS;
+let tileMap = [];
+
+// Tile types
+const T_ROAD = 0, T_BUILDING = 1, T_VIRUS = 2, T_PARK = 3, T_LAB = 4, T_HOSPITAL = 5, T_POLICE = 6;
+
+const TILE_COLORS = {
+  [T_ROAD]:     '#1a2235',
+  [T_BUILDING]: '#0f1a28',
+  [T_VIRUS]:    '#3a0a0a',
+  [T_PARK]:     '#0a1f0f',
+  [T_LAB]:      '#0f0f2a',
+  [T_HOSPITAL]: '#0a1a2a',
+  [T_POLICE]:   '#0a1a0f',
 };
 
-ZONES[0].I = 5; ZONES[0].S -= 5;
-ZONES[3].I = 2; ZONES[3].S -= 2;
+function buildMap() {
+  COLS = Math.ceil(W / TILE) + 2;
+  ROWS = Math.ceil(H / TILE) + 2;
+  tileMap = [];
+  for(let r=0;r<ROWS;r++){
+    tileMap[r]=[];
+    for(let c=0;c<COLS;c++){
+      // Roads every 5 tiles
+      if(r%5===0||c%5===0) tileMap[r][c]=T_ROAD;
+      else tileMap[r][c]=T_BUILDING;
+    }
+  }
+  // Special zones
+  setZone(2,2,3,3,T_HOSPITAL);
+  setZone(2,8,3,3,T_LAB);
+  setZone(2,14,3,3,T_POLICE);
+  setZone(8,2,3,3,T_PARK);
+  setZone(8,8,3,3,T_PARK);
+  // Virus zones
+  addVirusZones();
+}
 
-const canvas = document.getElementById('map');
-const ctx = canvas.getContext('2d');
-let W, H;
+function setZone(r,c,h,w,type){
+  for(let i=r;i<r+h&&i<ROWS;i++)
+    for(let j=c;j<c+w&&j<COLS;j++)
+      tileMap[i][j]=type;
+}
 
-function resize() {
-  const area = document.getElementById('map-area');
+function addVirusZones(){
+  const spots=[[5,3],[5,11],[10,6],[12,3],[7,16]];
+  spots.forEach(([r,c])=>setZone(r,c,2,2,T_VIRUS));
+}
+
+// --- PLAYER ---
+const player = {
+  x: 120, y: 120, w: 20, h: 24,
+  speed: 3, health: 100,
+  kits: 0, dnaSolved: 0,
+  infected: false, infTimer: 0,
+  vx: 0, vy: 0,
+};
+
+// --- POLICE ---
+let police = [];
+function spawnPolice(){
+  police = [
+    { x: W*0.7, y: H*0.2, w: 22, h: 16, speed: 1.4, angle: 0, alertTimer: 0 },
+    { x: W*0.3, y: H*0.7, w: 22, h: 16, speed: 1.2, angle: 0, alertTimer: 0 },
+  ];
+}
+
+// --- RAZOR ---
+let razor = { x: W*0.8, y: H*0.8, w: 20, h: 24, caught: false, speed: 1.1, angle: 0 };
+
+// --- VACCINE KITS ---
+let kits = [];
+function spawnKits(){
+  kits = [];
+  const positions = [[160,240],[320,160],[480,320],[200,400],[560,200],[400,480]];
+  positions.forEach(([x,y]) => kits.push({ x, y, w:16, h:16, collected:false }));
+}
+
+// --- DNA PUZZLES ---
+const DNA_PUZZLES = [
+  { seq: 'ATG_GC', missing: 'C', options: ['A','C','T','G'], answer: 'C' },
+  { seq: 'GCA_TT', missing: '_', options: ['T','A','G','C'], answer: 'A' },
+  { seq: 'TTG_CA', missing: '_', options: ['C','G','A','T'], answer: 'G' },
+];
+let currentPuzzle = 0, puzzleActive = false, puzzleZones = [];
+
+function spawnPuzzleZones(){
+  puzzleZones = [
+    { x: W*0.25, y: H*0.25, r: 20, collected: false },
+    { x: W*0.6,  y: H*0.4,  r: 20, collected: false },
+    { x: W*0.4,  y: H*0.7,  r: 20, collected: false },
+  ];
+}
+
+// --- INPUT ---
+const keys = {};
+window.addEventListener('keydown', e => { keys[e.key] = true; e.preventDefault(); });
+window.addEventListener('keyup',   e => { keys[e.key] = false; });
+
+// --- CAMERA ---
+let cam = { x: 0, y: 0 };
+
+// --- GAME STATE ---
+let state = {
+  day: 1, cityInfected: 7, dayTimer: 0,
+  gameOver: false, won: false,
+  overlayShown: false, razorCaught: false,
+  score: 0,
+};
+
+function resize(){
+  const area = document.getElementById('game-area');
   W = canvas.width = area.clientWidth;
   H = canvas.height = area.clientHeight;
-  drawMap();
 }
 
-function zoneRect(z) {
-  return { x: z.x*W, y: z.y*H, w: z.w*W, h: z.h*H };
+function getTile(wx, wy){
+  const c = Math.floor(wx/TILE);
+  const r = Math.floor(wy/TILE);
+  if(r<0||r>=ROWS||c<0||c>=COLS) return T_ROAD;
+  return tileMap[r][c];
 }
 
-function drawMap() {
-  ctx.clearRect(0,0,W,H);
-  ctx.fillStyle = '#0d1520';
-  ctx.fillRect(0,0,W,H);
-
-  ctx.strokeStyle = '#1D9E7515'; ctx.lineWidth = 1;
-  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-
-  ctx.strokeStyle = '#1D9E7530'; ctx.lineWidth = 1.5; ctx.setLineDash([6,4]);
-  ctx.beginPath(); ctx.moveTo(W*0.33,0); ctx.lineTo(W*0.33,H); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(W*0.62,0); ctx.lineTo(W*0.62,H); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(0,H*0.44); ctx.lineTo(W,H*0.44); ctx.stroke();
-  ctx.setLineDash([]);
-
-  ZONES.forEach((z,i) => {
-    const r = zoneRect(z);
-    const infRatio = z.pop > 0 ? z.I / z.pop : 0;
-
-    ctx.fillStyle = z.color + '18';
-    roundRect(ctx, r.x+4, r.y+4, r.w-8, r.h-8, 10);
-    ctx.fill();
-
-    if(infRatio > 0) {
-      ctx.fillStyle = `rgba(226,75,74,${Math.min(0.35, infRatio * 0.7)})`;
-      roundRect(ctx, r.x+4, r.y+4, r.w-8, r.h-8, 10);
-      ctx.fill();
-    }
-
-    const borderColor = state.selectedZone === i ? '#ffffff' : z.quarantine ? '#EF9F27' : z.color;
-    ctx.strokeStyle = borderColor;
-    ctx.lineWidth = state.selectedZone === i ? 2.5 : 1.5;
-    roundRect(ctx, r.x+4, r.y+4, r.w-8, r.h-8, 10);
-    ctx.stroke();
-
-    ctx.fillStyle = '#e0e8ff';
-    ctx.font = `600 ${Math.max(12, r.w*0.09)}px Segoe UI`;
-    ctx.textAlign = 'center';
-    ctx.fillText(z.name, r.x + r.w/2, r.y + 28);
-
-    ctx.font = `${Math.max(10, r.w*0.07)}px Segoe UI`;
-    ctx.fillStyle = '#E24B4A';
-    ctx.fillText(`Infected: ${z.I}`, r.x + r.w/2, r.y + 48);
-    ctx.fillStyle = '#1D9E75';
-    ctx.fillText(`Recovered: ${z.R}`, r.x + r.w/2, r.y + 64);
-    ctx.fillStyle = '#a0b8c8';
-    ctx.fillText(`Pop: ${z.pop}`, r.x + r.w/2, r.y + 80);
-
-    if(z.quarantine) {
-      ctx.fillStyle = '#EF9F27';
-      ctx.font = `bold ${Math.max(10,r.w*0.065)}px Segoe UI`;
-      ctx.fillText('QUARANTINE', r.x + r.w/2, r.y + r.h - 14);
-    }
-
-    const maxDots = 12;
-    const dots = Math.round(infRatio * maxDots);
-    for(let d=0;d<dots;d++) {
-      const dx = r.x + 16 + Math.random()*(r.w-32);
-      const dy = r.y + 95 + Math.random()*(r.h-110);
-      ctx.beginPath(); ctx.arc(dx, dy, 3.5, 0, Math.PI*2);
-      ctx.fillStyle = '#E24B4A'; ctx.fill();
-    }
-  });
-
-  ctx.fillStyle = '#1D9E7560'; ctx.font = 'bold 13px Segoe UI'; ctx.textAlign = 'left';
-  ctx.fillText('BIOCITY — Click a zone to inspect', 12, H-12);
+function isWalkable(wx, wy){
+  const t = getTile(wx, wy);
+  return t !== T_BUILDING;
 }
 
-function roundRect(ctx, x, y, w, h, r) {
-  ctx.beginPath();
-  ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.arcTo(x+w,y,x+w,y+r,r);
-  ctx.lineTo(x+w,y+h-r); ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
-  ctx.lineTo(x+r,y+h); ctx.arcTo(x,y+h,x,y+h-r,r);
-  ctx.lineTo(x,y+r); ctx.arcTo(x,y,x+r,y,r);
-  ctx.closePath();
-}
+function update(){
+  if(state.gameOver || puzzleActive || state.overlayShown) return;
 
-canvas.addEventListener('click', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = (e.clientX - rect.left) * (W / rect.width);
-  const my = (e.clientY - rect.top) * (H / rect.height);
-  ZONES.forEach((z,i) => {
-    const r = zoneRect(z);
-    if(mx>=r.x && mx<=r.x+r.w && my>=r.y && my<=r.y+r.h) {
-      state.selectedZone = i; updateSidePanel(); drawMap();
-    }
-  });
-});
+  // Player movement
+  player.vx = 0; player.vy = 0;
+  if(keys['ArrowLeft']  || keys['a']) player.vx = -player.speed;
+  if(keys['ArrowRight'] || keys['d']) player.vx =  player.speed;
+  if(keys['ArrowUp']    || keys['w']) player.vy = -player.speed;
+  if(keys['ArrowDown']  || keys['s']) player.vy =  player.speed;
 
-function totalInfected() { return ZONES.reduce((s,z)=>s+z.I,0); }
-function totalRecovered() { return ZONES.reduce((s,z)=>s+z.R,0); }
-function totalSusceptible() { return ZONES.reduce((s,z)=>s+z.S,0); }
+  // Diagonal normalize
+  if(player.vx && player.vy){ player.vx *= 0.707; player.vy *= 0.707; }
 
-function sirStep() {
-  ZONES.forEach(z => {
-    if(z.pop === 0) return;
-    const beta = z.quarantine ? state.beta * 0.2 : state.beta;
-    const N = z.pop;
-    const newInfected = Math.min(z.S, Math.round(beta * z.S * z.I / N));
-    const newRecovered = Math.min(z.I, Math.round(state.gamma * z.I));
-    z.S = Math.max(0, z.S - newInfected);
-    z.I = Math.max(0, z.I + newInfected - newRecovered);
-    z.R = Math.min(z.pop, z.R + newRecovered);
-  });
+  const nx = player.x + player.vx;
+  const ny = player.y + player.vy;
 
-  if(Math.random() < 0.15 && !state.actions.closeBorders) {
-    const clean = ZONES.filter(z=>z.I===0 && z.S>5);
-    if(clean.length) { const z=clean[Math.floor(Math.random()*clean.length)]; z.I=1; z.S=Math.max(0,z.S-1); }
+  // Collision - check corners
+  const pw = player.w/2-2, ph = player.h/2-2;
+  if(isWalkable(nx-pw, player.y-ph) && isWalkable(nx+pw, player.y-ph) &&
+     isWalkable(nx-pw, player.y+ph) && isWalkable(nx+pw, player.y+ph))
+    player.x = Math.max(10, Math.min(COLS*TILE-10, nx));
+
+  if(isWalkable(player.x-pw, ny-ph) && isWalkable(player.x+pw, ny-ph) &&
+     isWalkable(player.x-pw, ny+ph) && isWalkable(player.x+pw, ny+ph))
+    player.y = Math.max(10, Math.min(ROWS*TILE-10, ny));
+
+  // Camera follow
+  cam.x = player.x - W/2;
+  cam.y = player.y - H/2;
+  cam.x = Math.max(0, Math.min(COLS*TILE-W, cam.x));
+  cam.y = Math.max(0, Math.min(ROWS*TILE-H, cam.y));
+
+  // Virus zone damage
+  const pt = getTile(player.x, player.y);
+  if(pt === T_VIRUS){
+    player.health = Math.max(0, player.health - 0.15);
+    if(player.health <= 0){ endGame(false, 'Infected'); return; }
   }
 
-  if(state.actions.labResearch) state.vaccineProgress = Math.min(100, state.vaccineProgress + 8);
-  if(state.actions.distributeVaccine && state.vaccineProgress >= 100) {
-    ZONES.forEach(z => { const boost=Math.min(z.S,Math.round(z.pop*0.1)); z.S-=boost; z.R+=boost; z.vaccinated+=boost; });
+  // Collect kits
+  kits.forEach(k => {
+    if(!k.collected && dist(player.x,player.y,k.x,k.y) < 24){
+      k.collected = true; player.kits++;
+      showOverlayBrief('💉 Vaccine Kit Collected!', `You have ${player.kits} kits. Use them to heal infected zones.`);
+    }
+  });
+
+  // DNA puzzle zones
+  puzzleZones.forEach((pz, i) => {
+    if(!pz.collected && dist(player.x,player.y,pz.x+cam.x,pz.y+cam.y) < 28){
+      pz.collected = true; triggerDNAPuzzle(i);
+    }
+  });
+
+  // Police AI
+  police.forEach(p => {
+    const dx = player.x - p.x, dy = player.y - p.y;
+    const d = Math.sqrt(dx*dx+dy*dy);
+    p.angle = Math.atan2(dy,dx);
+    if(d < 400){
+      const spd = d < 150 ? p.speed * 1.5 : p.speed;
+      const pnx = p.x + Math.cos(p.angle)*spd;
+      const pny = p.y + Math.sin(p.angle)*spd;
+      if(isWalkable(pnx,p.y)) p.x = pnx;
+      if(isWalkable(p.x,pny)) p.y = pny;
+    }
+    if(d < 20){
+      player.health = Math.max(0, player.health - 0.5);
+      if(player.health <= 0){ endGame(false, 'Arrested'); return; }
+    }
+  });
+
+  // Razor AI — runs away
+  if(!state.razorCaught){
+    const dx = player.x - razor.x, dy = player.y - razor.y;
+    const d = Math.sqrt(dx*dx+dy*dy);
+    razor.angle = Math.atan2(dy,dx) + Math.PI; // run away
+    if(d < 300){
+      const rnx = razor.x + Math.cos(razor.angle)*razor.speed;
+      const rny = razor.y + Math.sin(razor.angle)*razor.speed;
+      if(isWalkable(rnx,razor.y)) razor.x = Math.max(10,Math.min(COLS*TILE-10,rnx));
+      if(isWalkable(razor.x,rny)) razor.y = Math.max(10,Math.min(ROWS*TILE-10,rny));
+    }
+    if(d < 28 && player.kits >= 2){
+      state.razorCaught = true;
+      player.kits -= 2;
+      state.cityInfected = Math.max(0, state.cityInfected - 20);
+      showOverlay('🦹 Razor Caught!', 'You used 2 vaccine kits to neutralise Rajan "Razor" Das. City infection dropping. Now solve all DNA puzzles to synthesise the cure!');
+    }
   }
 
-  state.cityHealth = Math.max(0, 100 - Math.round(totalInfected() / CITY_POP * 120));
-}
+  // Day advance
+  state.dayTimer++;
+  if(state.dayTimer > 600){
+    state.dayTimer = 0; state.day++;
+    state.cityInfected = Math.min(500, state.cityInfected + Math.floor(Math.random()*8+3));
+  }
 
-function addLog(msg, type='normal') {
-  state.log.unshift({ msg, type, day: state.day });
-  if(state.log.length > 20) state.log.pop();
-}
-
-function advanceDay() {
-  if(state.gameOver) return;
-  sirStep();
-  state.day++;
-  checkEvents();
-  updateHUD();
-  updateSidePanel();
-  drawMap();
-  checkGameOver();
-}
-
-function checkEvents() {
-  const ti = totalInfected();
-  if(state.day === 3) addLog('Virus detected in Airport zone — travel risk rising.', 'warn');
-  if(state.day === 5) addLog('WHO issues emergency alert. R0 estimated at 2.5.', 'warn');
-  if(ti > 100 && state.day % 3 === 0) addLog(`${ti} infected — city under stress.`, 'danger');
-  if(state.vaccineProgress >= 100 && !state._vaccineDone) { state._vaccineDone=true; addLog('Vaccine synthesised by Dr. Meera Rao! Deploy now.', 'good'); }
-  if(state.day === 7) addLog('Razor spotted near Slums. Spreading intentionally.', 'danger');
-}
-
-function checkGameOver() {
-  const ti = totalInfected();
-  const tr = totalRecovered();
-  if(state.cityHealth <= 0 || ti >= CITY_POP * 0.85) {
-    endGame(false);
-  } else if(ti === 0 && state.day > 5 && tr > 50) {
+  // Win condition
+  if(state.razorCaught && player.dnaSolved >= 3 && player.kits >= 1){
     endGame(true);
   }
-}
 
-function endGame(win) {
-  state.gameOver = true;
-  document.getElementById('screen-game').style.display = 'none';
-  document.getElementById('screen-gameover').style.display = 'flex';
-  document.getElementById('go-title').textContent = win ? 'Outbreak Contained!' : 'BioCity Fell.';
-  document.getElementById('go-title').style.color = win ? '#1D9E75' : '#E24B4A';
-  document.getElementById('go-msg').textContent = win
-    ? `Dr. Meera Rao saved BioCity on Day ${state.day}! ${totalRecovered()} people recovered. Your bioinformatics knowledge made the difference.`
-    : `The virus overwhelmed BioCity by Day ${state.day}. ${totalInfected()} infected. City health: ${state.cityHealth}%. Try different strategies next time.`;
-}
+  if(state.cityInfected >= 200){ endGame(false, 'Outbreak'); return; }
 
-function updateHUD() {
-  document.getElementById('h-day').textContent = state.day;
-  document.getElementById('h-infected').textContent = totalInfected();
-  document.getElementById('h-recovered').textContent = totalRecovered();
-  document.getElementById('h-health').textContent = Math.round(state.cityHealth) + '%';
-  document.getElementById('h-r0').textContent = state.beta.toFixed(2);
-  document.getElementById('h-vaccine').textContent = Math.round(state.vaccineProgress) + '%';
-}
-
-function updateSidePanel() {
-  const z = state.selectedZone !== null ? ZONES[state.selectedZone] : null;
-  document.getElementById('zone-info').innerHTML = z
-    ? `<b style="color:#e0e8ff">${z.name}</b><br>
-       Population: <span>${z.pop}</span><br>
-       Susceptible: <span style="color:#a0b8c8">${z.S}</span><br>
-       Infected: <span style="color:#E24B4A">${z.I}</span><br>
-       Recovered: <span style="color:#1D9E75">${z.R}</span><br>
-       Status: <span>${z.quarantine ? '🔒 Quarantined' : 'Open'}</span>`
-    : 'Click a zone on the map to inspect it.';
-
-  const tot = CITY_POP;
-  const S = totalSusceptible(), I = totalInfected(), R = totalRecovered();
-  document.getElementById('sir-bars').innerHTML = `
-    <div class="sir-row"><span class="sir-label" style="color:#a0b8c8">S</span><div class="sir-bar-bg"><div class="sir-bar" style="width:${Math.round(S/tot*100)}%;background:#185FA5"></div></div><span class="sir-val">${S}</span></div>
-    <div class="sir-row"><span class="sir-label" style="color:#E24B4A">I</span><div class="sir-bar-bg"><div class="sir-bar" style="width:${Math.round(I/tot*100)}%;background:#E24B4A"></div></div><span class="sir-val">${I}</span></div>
-    <div class="sir-row"><span class="sir-label" style="color:#1D9E75">R</span><div class="sir-bar-bg"><div class="sir-bar" style="width:${Math.round(R/tot*100)}%;background:#1D9E75"></div></div><span class="sir-val">${R}</span></div>
-    <div style="font-size:11px;color:#4a7a65;margin-top:6px">SIR epidemiological model — real bioinformatics math</div>`;
-
-  document.getElementById('actions-area').innerHTML = `
-    <button class="action-btn ${state.actions.quarantine?'used':''}" onclick="doAction('quarantine')">${state.actions.quarantine?'✓ Quarantine Active':'🔒 Quarantine Selected Zone'}</button>
-    <button class="action-btn ${state.actions.massTesting?'used':''}" onclick="doAction('massTesting')">${state.actions.massTesting?'✓ Mass Testing Active':'🧪 Deploy Mass Testing'}</button>
-    <button class="action-btn ${state.actions.labResearch?'used':''}" onclick="doAction('labResearch')">${state.actions.labResearch?'✓ Lab Research Active':'🔬 Start Vaccine Research'}</button>
-    <button class="action-btn ${state.vaccineProgress<100?'used':''}" onclick="doAction('distributeVaccine')" ${state.vaccineProgress<100?'disabled':''}>${state.vaccineProgress<100?`Vaccine: ${Math.round(state.vaccineProgress)}% ready`:'💉 Distribute Vaccine!'}</button>
-    <button class="action-btn ${state.actions.closeBorders?'used':''}" onclick="doAction('closeBorders')">${state.actions.closeBorders?'✓ Borders Closed':'✈️ Close Airport Borders'}</button>`;
-
-  document.getElementById('log-area').innerHTML = state.log.slice(0,8).map(l =>
-    `<div class="log-line"><span class="log-hi">Day ${l.day}:</span> ${l.msg}</div>`
-  ).join('') || '<div class="log-line">No events yet.</div>';
-}
-
-function doAction(action) {
-  if(action === 'quarantine') {
-    if(state.selectedZone === null) { addLog('Select a zone first to quarantine.', 'warn'); updateSidePanel(); return; }
-    ZONES[state.selectedZone].quarantine = !ZONES[state.selectedZone].quarantine;
-    addLog(`${ZONES[state.selectedZone].quarantine?'Quarantined':'Opened'}: ${ZONES[state.selectedZone].name}`, 'good');
-  } else if(action === 'massTesting') {
-    state.actions.massTesting = true;
-    state.beta = Math.max(0.05, state.beta - 0.08);
-    addLog('Mass testing deployed — spread rate reduced.', 'good');
-  } else if(action === 'labResearch') {
-    state.actions.labResearch = true;
-    addLog('Dr. Meera begins vaccine synthesis in the Lab.', 'good');
-  } else if(action === 'distributeVaccine') {
-    if(state.vaccineProgress < 100) return;
-    state.actions.distributeVaccine = true;
-    addLog('Vaccine distribution started across all zones!', 'good');
-  } else if(action === 'closeBorders') {
-    state.actions.closeBorders = true;
-    addLog('Airport borders closed — cross-zone spread blocked.', 'good');
-  }
-  updateSidePanel(); drawMap();
-}
-
-function togglePause() {
-  state.paused = !state.paused;
-  document.getElementById('pause-btn').textContent = state.paused ? 'Resume' : 'Pause';
-}
-
-let autoTimer;
-function startAutoAdvance() {
-  autoTimer = setInterval(() => { if(!state.paused && !state.gameOver) advanceDay(); }, 3000);
-}
-
-function startGame() {
-  document.getElementById('screen-title').style.display = 'none';
-  document.getElementById('screen-game').style.display = 'flex';
-  addLog('Outbreak begins. Virus detected in Market & Slums.', 'danger');
-  addLog('Dr. Meera Rao deployed. Save BioCity.', 'good');
-  resize();
   updateHUD();
-  updateSidePanel();
-  drawMap();
-  startAutoAdvance();
 }
 
-window.addEventListener('resize', resize);
+function draw(){
+  ctx.clearRect(0,0,W,H);
+
+  ctx.save();
+  ctx.translate(-cam.x, -cam.y);
+
+  // Draw tiles
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const t = tileMap[r][c];
+      const tx = c*TILE, ty = r*TILE;
+
+      ctx.fillStyle = TILE_COLORS[t];
+      ctx.fillRect(tx,ty,TILE,TILE);
+
+      // Road markings
+      if(t===T_ROAD){
+        ctx.strokeStyle='#1D9E7510'; ctx.lineWidth=1;
+        ctx.strokeRect(tx,ty,TILE,TILE);
+        // Lane lines
+        if(r%5===0){
+          ctx.strokeStyle='#ffffff08'; ctx.lineWidth=1;
+          ctx.setLineDash([8,8]);
+          ctx.beginPath(); ctx.moveTo(tx,ty+TILE/2); ctx.lineTo(tx+TILE,ty+TILE/2); ctx.stroke();
+          ctx.setLineDash([]);
+        }
+      }
+
+      // Building details
+      if(t===T_BUILDING){
+        ctx.fillStyle='#ffffff04';
+        ctx.fillRect(tx+4,ty+4,TILE-8,TILE-8);
+        ctx.strokeStyle='#1D9E7508'; ctx.lineWidth=0.5;
+        ctx.strokeRect(tx+4,ty+4,TILE-8,TILE-8);
+      }
+
+      // Virus zone glow
+      if(t===T_VIRUS){
+        ctx.fillStyle=`rgba(226,75,74,${0.15+0.1*Math.sin(Date.now()/400)})`;
+        ctx.fillRect(tx,ty,TILE,TILE);
+        ctx.fillStyle='#E24B4A30';
+        ctx.font='18px sans-serif'; ctx.textAlign='center';
+        ctx.fillText('☣️',tx+TILE/2,ty+TILE/2+6);
+      }
+
+      // Zone labels
+      if(t===T_HOSPITAL && r%3===2 && c%3===2){
+        ctx.fillStyle='#185FA5'; ctx.font='bold 11px Segoe UI'; ctx.textAlign='center';
+        ctx.fillText('HOSPITAL',tx+TILE/2,ty-4);
+        ctx.fillText('🏥',tx+TILE/2,ty+TILE/2+6);
+      }
+      if(t===T_LAB && r%3===2 && c%3===2){
+        ctx.fillStyle='#534AB7'; ctx.font='bold 11px Segoe UI'; ctx.textAlign='center';
+        ctx.fillText('LAB',tx+TILE/2,ty-4);
+        ctx.fillText('🔬',tx+TILE/2,ty+TILE/2+6);
+      }
+      if(t===T_POLICE && r%3===2 && c%3===2){
+        ctx.fillStyle='#3B6D11'; ctx.font='bold 11px Segoe UI'; ctx.textAlign='center';
+        ctx.fillText('POLICE',tx+TILE/2,ty-4);
+        ctx.fillText('🚔',tx+TILE/2,ty+TILE/2+6);
+      }
+      if(t===T_PARK){
+        ctx.fillStyle='#1D9E7530';
+        ctx.fillRect(tx+2,ty+2,TILE-4,TILE-4);
+        if(r%3===1&&c%3===1){ ctx.font='14px sans-serif'; ctx.textAlign='center'; ctx.fillText('🌿',tx+TILE/2,ty+TILE/2+5); }
+      }
+    }
+  }
+
+  // Vaccine kits
+  kits.forEach(k => {
+    if(k.collected) return;
+    ctx.font='18px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('💉',k.x,k.y+6);
+    // Glow
+    ctx.beginPath(); ctx.arc(k.x,k.y,14,0,Math.PI*2);
+    ctx.strokeStyle='#1D9E7540'; ctx.lineWidth=1.5; ctx.stroke();
+  });
+
+  // DNA puzzle zones
+  puzzleZones.forEach((pz,i) => {
+    if(pz.collected) return;
+    const wx = pz.x + cam.x, wy = pz.y + cam.y;
+    // Draw at world position
+    ctx.beginPath(); ctx.arc(wx,wy,20,0,Math.PI*2);
+    ctx.fillStyle=`rgba(83,74,183,${0.2+0.1*Math.sin(Date.now()/300+i)})`;
+    ctx.fill();
+    ctx.strokeStyle='#534AB7'; ctx.lineWidth=2; ctx.stroke();
+    ctx.font='16px sans-serif'; ctx.textAlign='center';
+    ctx.fillText('🧬',wx,wy+6);
+    ctx.fillStyle='#9B8FFF'; ctx.font='bold 10px Segoe UI';
+    ctx.fillText('DNA',wx,wy+22);
+  });
+
+  // Razor
+  if(!state.razorCaught){
+    ctx.save();
+    ctx.translate(razor.x, razor.y);
+    // Body
+    ctx.fillStyle='#E24B4A';
+    ctx.beginPath(); ctx.arc(0,-10,10,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#c43a3a';
+    ctx.fillRect(-8,0,16,16);
+    ctx.fillStyle='#fff'; ctx.font='bold 11px Segoe UI'; ctx.textAlign='center';
+    ctx.fillText('R',0,4);
+    ctx.fillStyle='#E24B4A'; ctx.font='10px sans-serif';
+    ctx.fillText('RAZOR',0,26);
+    ctx.restore();
+  }
+
+  // Police cars
+  police.forEach(p => {
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.angle);
+    // Car body
+    ctx.fillStyle='#1a4a8a';
+    ctx.fillRect(-11,-8,22,16);
+    ctx.fillStyle='#2266cc';
+    ctx.fillRect(-7,-6,14,12);
+    // Siren
+    const s = Math.sin(Date.now()/100)>0;
+    ctx.fillStyle=s?'#ff0000':'#0000ff';
+    ctx.fillRect(-4,-11,4,5);
+    ctx.fillStyle=s?'#0000ff':'#ff0000';
+    ctx.fillRect(1,-11,4,5);
+    ctx.fillStyle='#fff'; ctx.font='bold 8px Segoe UI'; ctx.textAlign='center';
+    ctx.fillText('POLICE',0,3);
+    ctx.restore();
+  });
+
+  // Player — Dr. Meera
+  ctx.save();
+  ctx.translate(player.x, player.y);
+  // Shadow
+  ctx.fillStyle='rgba(0,0,0,0.3)';
+  ctx.beginPath(); ctx.ellipse(0,14,8,4,0,0,Math.PI*2); ctx.fill();
+  // Lab coat body
+  ctx.fillStyle = player.health < 30 ? '#E24B4A' : '#e0e8ff';
+  ctx.fillRect(-8,-2,16,18);
+  // Green trim
+  ctx.fillStyle='#1D9E75';
+  ctx.fillRect(-8,-2,3,18);
+  ctx.fillRect(5,-2,3,18);
+  // Head
+  ctx.fillStyle='#c8956c';
+  ctx.beginPath(); ctx.arc(0,-10,9,0,Math.PI*2); ctx.fill();
+  // Hair
+  ctx.fillStyle='#2a1a0a';
+  ctx.beginPath(); ctx.arc(0,-14,7,Math.PI,0); ctx.fill();
+  // Eyes
+  ctx.fillStyle='#1a0a0a';
+  ctx.fillRect(-4,-11,3,2); ctx.fillRect(1,-11,3,2);
+  // DNA symbol on coat
+  ctx.fillStyle='#1D9E75'; ctx.font='bold 9px Segoe UI'; ctx.textAlign='center';
+  ctx.fillText('🧬',0,10);
+  // Name tag
+  ctx.fillStyle='#1D9E75'; ctx.font='bold 9px Segoe UI';
+  ctx.fillText('MEERA',0,28);
+  ctx.restore();
+
+  ctx.restore(); // end camera transform
+
+  // Health bar (screen space)
+  const hpRatio = player.health/100;
+  ctx.fillStyle='#111c2a';
+  ctx.fillRect(12,H-28,120,10);
+  ctx.fillStyle=hpRatio>0.5?'#1D9E75':hpRatio>0.25?'#EF9F27':'#E24B4A';
+  ctx.fillRect(12,H-28,120*hpRatio,10);
+  ctx.strokeStyle='#1D9E7540'; ctx.lineWidth=1;
+  ctx.strokeRect(12,H-28,120,10);
+  ctx.fillStyle='#a0b8c8'; ctx.font='10px Segoe UI'; ctx.textAlign='left';
+  ctx.fillText(`HP: ${Math.round(player.health)}%`, 14, H-32);
+
+  // Mini infection meter
+  const infRatio = state.cityInfected/200;
+  ctx.fillStyle='#111c2a';
+  ctx.fillRect(W-132,H-28,120,10);
+  ctx.fillStyle=`rgba(226,75,74,${0.5+0.5*infRatio})`;
+  ctx.fillRect(W-132,H-28,120*infRatio,10);
+  ctx.strokeStyle='#E24B4A40'; ctx.lineWidth=1;
+  ctx.strokeRect(W-132,H-28,120,10);
+  ctx.fillStyle='#a0b8c8'; ctx.font='10px Segoe UI'; ctx.textAlign='right';
+  ctx.fillText(`City Infection: ${state.cityInfected}`, W-14, H-32);
+}
+
+function dist(x1,y1,x2,y2){ return Math.sqrt((x1-x2)**2+(y1-y2)**2); }
+
+function loop(){
+  update();
+  draw();
+  animFrame = requestAnimationFrame(loop);
+}
+
+// DNA Puzzle
+function triggerDNAPuzzle(idx){
+  if(idx >= DNA_PUZZLES.length) return;
+  puzzleActive = true;
+  const pz = DNA_PUZZLES[idx];
+  document.getElementById('dna-seq-display').textContent = pz.seq;
+  const opts = document.getElementById('dna-options');
+  opts.innerHTML = '';
+  document.getElementById('dna-result').textContent = '';
+  pz.options.forEach(o => {
+    const btn = document.createElement('button');
+    btn.className='dna-btn'; btn.textContent=o;
+    btn.onclick=()=>checkDNA(o, pz.answer, idx);
+    opts.appendChild(btn);
+  });
+  document.getElementById('dna-puzzle').style.display='block';
+}
+
+function checkDNA(choice, answer, idx){
+  const result = document.getElementById('dna-result');
+  if(choice === answer){
+    result.textContent='✅ Correct! Sequence identified.';
+    result.style.color='#1D9E75';
+    player.dnaSolved++;
+    state.cityInfected = Math.max(0, state.cityInfected - 15);
+    setTimeout(()=>{
+      document.getElementById('dna-puzzle').style.display='none';
+      puzzleActive=false;
+      showOverlayBrief('🧬 Sequence Solved!',`Viral DNA decoded! City infection reduced. ${3-player.dnaSolved} puzzles remaining.`);
+    }, 800);
+  } else {
+    result.textContent='❌ Wrong base pair! Try again.';
+    result.style.color='#E24B4A';
+    player.health = Math.max(0, player.health-10);
+  }
+}
+
+// Overlays
+function showOverlay(title, body){
+  state.overlayShown = true;
+  document.getElementById('ov-title').textContent = title;
+  document.getElementById('ov-body').textContent = body;
+  document.getElementById('overlay-msg').style.display='block';
+}
+
+function showOverlayBrief(title, body){
+  showOverlay(title, body);
+  setTimeout(closeOverlay, 2500);
+}
+
+function closeOverlay(){
+  document.getElementById('overlay-msg').style.display='none';
+  state.overlayShown=false;
+}
+
+function updateHUD(){
+  document.getElementById('h-health').textContent = Math.round(player.health);
+  document.getElementById('h-kits').textContent = player.kits;
+  document.getElementById('h-infected').textContent = state.cityInfected;
+  document.getElementById('h-day').textContent = state.day;
+  document.getElementById('h-dna').textContent = `${player.dnaSolved}/3`;
+  document.getElementById('h-razor').textContent = state.razorCaught ? '✅ Caught' : 'At Large';
+
+  const hEl = document.getElementById('h-health');
+  hEl.className = 'val ' + (player.health>60?'green':player.health>30?'amber':'red');
+}
+
+function endGame(win, reason=''){
+  state.gameOver=true;
+  cancelAnimationFrame(animFrame);
+  document.getElementById('screen-game').style.display='none';
+  document.getElementById('screen-gameover').style.display='flex';
+  const t = document.getElementById('go-title');
+  const m = document.getElementById('go-msg');
+  if(win){
+    t.textContent='🧬 BioCity Saved!';
+    t.style.color='#1D9E75';
+    m.textContent=`Dr. Meera Rao saved BioCity on Day ${state.day}! You caught Razor, solved all 3 DNA sequences, and synthesised the cure. The outbreak is contained. You are a hero.`;
+  } else {
+    t.textContent = reason==='Arrested' ? '🚔 Arrested!' : reason==='Infected' ? '☣️ Infected!' : '💀 BioCity Fell';
+    t.style.color='#E24B4A';
+    m.textContent = reason==='Arrested'
+      ? `The police caught Dr. Meera Rao on Day ${state.day}. Without her, the outbreak spread unchecked. Try escaping the police next time!`
+      : reason==='Infected'
+      ? `Dr. Meera walked through too many virus zones and got infected on Day ${state.day}. Avoid the red ☣️ zones!`
+      : `The city infection reached critical levels on Day ${state.day}. Collect kits and solve DNA puzzles faster next time!`;
+  }
+}
+
+function startGame(){
+  document.getElementById('screen-title').style.display='none';
+  document.getElementById('screen-game').style.display='flex';
+  resize();
+  buildMap();
+  spawnPolice();
+  spawnKits();
+  spawnPuzzleZones();
+  razor.x = COLS*TILE*0.8; razor.y = ROWS*TILE*0.8;
+  showOverlay('🧬 BioCity — Day 1','Dr. Meera Rao, the outbreak has begun. Collect 💉 vaccine kits, solve 🧬 DNA puzzles, and catch Razor before the city falls. Avoid ☣️ virus zones and 🚔 police. Good luck.');
+  loop();
+}
+
+window.addEventListener('resize', ()=>{ resize(); buildMap(); spawnPolice(); spawnKits(); spawnPuzzleZones(); });
 </script>
 </body>
 </html>
