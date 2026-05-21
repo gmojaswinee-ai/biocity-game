@@ -312,9 +312,8 @@ function update() {
     if(keys['ArrowUp']||keys['w']) { vy=-car.speed; car.angle=-Math.PI/2; }
     if(keys['ArrowDown']||keys['s']) { vy=car.speed; car.angle=Math.PI/2; }
     if(vx&&vy){vx*=0.707;vy*=0.707;}
-    const nx=car.x+vx, ny=car.y+vy;
-    if(walkable(nx,car.y)) car.x=Math.max(10,Math.min(COLS*TILE-10,nx));
-    if(walkable(car.x,ny)) car.y=Math.max(10,Math.min(ROWS*TILE-10,ny));
+    car.x=Math.max(10,Math.min(COLS*TILE-10,car.x+vx));
+    car.y=Math.max(10,Math.min(ROWS*TILE-10,car.y+vy));
     player.x=car.x; player.y=car.y;
     if(keys['e']||keys['E']) { player.inCar=false; addLog('Meera stepped out of the car.'); }
   } else {
@@ -760,7 +759,7 @@ function startGame(){
   gameStarted=true;
   resize();buildMap();spawnNPCs();spawnPolice();spawnKits();spawnPuzzleSpots();
   razor.x=COLS*TILE*0.75;razor.y=ROWS*TILE*0.75;
-  player.car.x=200;player.car.y=180;
+  player.car.x=TILE*6;player.car.y=TILE*6;
   addLog('Day 1 — Outbreak detected. Save BioCity, Dr. Meera!');
   showOverlay('🧬 Welcome to BioCity',
     'You are Dr. Meera Rao. Live your life, do your job — but a deadly virus is spreading through the city.\n\n' +
