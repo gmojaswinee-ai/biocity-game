@@ -307,10 +307,11 @@ function update() {
   let vx=0,vy=0;
   if(player.inCar) {
     const car=player.car;
-    if(keys['ArrowLeft']||keys['a']) car.angle-=0.04;
-    if(keys['ArrowRight']||keys['d']) car.angle+=0.04;
-    if(keys['ArrowUp']||keys['w']) { vx=Math.cos(car.angle)*car.speed; vy=Math.sin(car.angle)*car.speed; }
-    if(keys['ArrowDown']||keys['s']) { vx=-Math.cos(car.angle)*car.speed*0.5; vy=-Math.sin(car.angle)*car.speed*0.5; }
+    if(keys['ArrowLeft']||keys['a']) { vx=-car.speed; car.angle=Math.PI; }
+    if(keys['ArrowRight']||keys['d']) { vx=car.speed; car.angle=0; }
+    if(keys['ArrowUp']||keys['w']) { vy=-car.speed; car.angle=-Math.PI/2; }
+    if(keys['ArrowDown']||keys['s']) { vy=car.speed; car.angle=Math.PI/2; }
+    if(vx&&vy){vx*=0.707;vy*=0.707;}
     const nx=car.x+vx, ny=car.y+vy;
     if(walkable(nx,car.y)) car.x=Math.max(10,Math.min(COLS*TILE-10,nx));
     if(walkable(car.x,ny)) car.y=Math.max(10,Math.min(ROWS*TILE-10,ny));
